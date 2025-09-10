@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/har-sat/rssagg/internal/database"
@@ -46,11 +45,15 @@ func main() {
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
 		MaxAge:           300,
-	},))
+	}))
 	v1Router := chi.NewRouter()
 	v1Router.Get("/ready", handlerReadiness)
 	v1Router.Get("/error", handlerErr)
 	v1Router.Post("/user", apiCfg.handlerCreateUser)
+	v1Router.Get("/user", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
+
+	v1Router.Post("/feed", apiCfg.middlewareAuth(apiCfg.hanlderCreateFeed))
+	v1Router.Get("/feed", apiCfg.hanlderGetFeeds)
 	router.Mount("/v1", v1Router)
 
 	server := &http.Server{

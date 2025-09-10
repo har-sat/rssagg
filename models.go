@@ -12,7 +12,18 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Name      string    `json:"name"`
+	ApiKey	  string 	`json:"api_key"`
 }
+
+type Feed struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time	`json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Name      string	`json:"name"`
+	Url       string	`json:"url"`
+	UserID    uuid.UUID	`json:"user_id"`
+}
+
 
 // this is just to not have camelcase in response and have custom json tags defined
 func DatabaseUserToUser(usr database.User) User {
@@ -21,5 +32,25 @@ func DatabaseUserToUser(usr database.User) User {
 		CreatedAt: usr.CreatedAt,
 		UpdatedAt: usr.UpdatedAt,
 		Name: usr.Name,
+		ApiKey: usr.ApiKey,
 	}
+}
+
+func DatabaseFeedToFeed(feed database.Feed) Feed {
+	return Feed {
+		ID: feed.ID,
+		CreatedAt: feed.CreatedAt,
+		UpdatedAt: feed.UpdatedAt,
+		Name: feed.Name,
+		Url: feed.Url,
+		UserID: feed.UserID,
+	}
+}
+
+func DatabaseFeedsToFeeds(dbFeeds []database.Feed) []Feed {
+	feeds := make([]Feed, len(dbFeeds))
+	for _, feed := range dbFeeds {
+		feeds = append(feeds, DatabaseFeedToFeed(feed))
+	}
+	return feeds
 }
