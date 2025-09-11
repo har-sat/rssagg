@@ -1,23 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/har-sat/rssagg/internal/database"
+	"github.com/har-sat/rssagg/internal/utils"
 )
 
 func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Name string `json:"name"`
 	}
-	decoder := json.NewDecoder(r.Body)
+	var params parameters
 
-	params := parameters{}
-	err := decoder.Decode(&params)
+	err := utils.DecodeJson(r, &params)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Error decoding json: %v", err))
 		return
