@@ -18,7 +18,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 
 	err := utils.DecodeJson(r, &params)
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error decoding json: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error decoding json: %v", err))
 		return
 	}
 
@@ -29,12 +29,12 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		Name:      params.Name,
 	})
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error creating user: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error creating user: %v", err))
 		return
 	}
-	respondWithJson(w, 201, DatabaseUserToUser(user))
+	utils.RespondWithJson(w, 201, DatabaseUserToUser(user))
 }
 
 func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJson(w, 200, DatabaseUserToUser(user))
+	utils.RespondWithJson(w, 200, DatabaseUserToUser(user))
 }

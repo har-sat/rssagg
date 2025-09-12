@@ -19,7 +19,7 @@ func (apiCfg *apiConfig) hanlderCreateFeed(w http.ResponseWriter, r *http.Reques
 
 	err := utils.DecodeJson(r, &params)
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error Decoding json: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error Decoding json: %v", err))
 	}
 
 	feed, err := apiCfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
@@ -31,19 +31,19 @@ func (apiCfg *apiConfig) hanlderCreateFeed(w http.ResponseWriter, r *http.Reques
 		UserID:    user.ID,
 	})
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Cannot create feed: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Cannot create feed: %v", err))
 		return
 	}
 
-	respondWithJson(w, 201, DatabaseFeedToFeed(feed))
+	utils.RespondWithJson(w, 201, DatabaseFeedToFeed(feed))
 }
 
 func (apiCfg *apiConfig) hanlderGetFeeds(w http.ResponseWriter, r *http.Request) {
 	feeds, err := apiCfg.DB.GetFeeds(r.Context())
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldn't fetch feeds: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch feeds: %v", err))
 		return
 	}
 
-	respondWithJson(w, 200, DatabaseFeedsToFeeds(feeds))
+	utils.RespondWithJson(w, 200, DatabaseFeedsToFeeds(feeds))
 }

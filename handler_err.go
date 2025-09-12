@@ -1,7 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/har-sat/rssagg/internal/utils"
+)
 
 func handlerErr(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, 500, "HardCoded Error")
+	utils.RespondWithError(w, 500, "HardCoded Error")
 }

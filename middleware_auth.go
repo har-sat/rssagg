@@ -6,6 +6,7 @@ import (
 
 	"github.com/har-sat/rssagg/internal/auth"
 	"github.com/har-sat/rssagg/internal/database"
+	"github.com/har-sat/rssagg/internal/utils"
 )
 
 type authHandler func(http.ResponseWriter, *http.Request, database.User)
@@ -14,13 +15,13 @@ func (apiCfg *apiConfig) middlewareAuth(handler authHandler) func(http.ResponseW
 	return func(w http.ResponseWriter, r *http.Request) {
 		apiKey, err := auth.GetAPIKey(r.Header)
 		if err != nil {
-			respondWithError(w, 403, fmt.Sprintf("AuthError: %v", err))
+			utils.RespondWithError(w, 403, fmt.Sprintf("AuthError: %v", err))
 			return
 		}
 
 		usr, err := apiCfg.DB.GetUserByAPIKey(r.Context(), apiKey)
 		if err != nil {
-			respondWithError(w, 400, fmt.Sprintf("Couldn't Get User: %v", err))
+			utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't Get User: %v", err))
 			return
 		}
 
