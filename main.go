@@ -2,15 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/har-sat/rssagg/internal/database"
-	"github.com/har-sat/rssagg/internal/utils"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -39,6 +38,9 @@ func main() {
 		DB: database.New(conn),
 	}
 
+	// SCRAPE FOR FEEDS
+	go startScrapping(apiCfg.DB, 10, time.Minute)
+	
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -73,3 +75,5 @@ func main() {
 	}
 
 }
+
+
