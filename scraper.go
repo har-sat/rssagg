@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/har-sat/rssagg/internal/database"
 	"github.com/har-sat/rssagg/internal/utils"
 )
@@ -14,22 +17,21 @@ import (
 func startScrapping(db *database.Queries, threads int, timeBetweenRequests time.Duration) {
 	log.Printf("Scraping on %v goroutines every %v duration", threads, timeBetweenRequests)
 
-	ticker:= time.NewTicker(timeBetweenRequests)
+	ticker := time.NewTicker(timeBetweenRequests)
 	for ; ; <-ticker.C {
 		feeds, err := db.GetNextFeedsToFetch(context.Background(), int32(threads))
 		if err != nil {
 			log.Printf("error fetching feeds from db: %v\n", err)
 			continue
 		}
-		
+
 		wg := sync.WaitGroup{}
 		for _, feed := range feeds {
-			wg.Go(func() {scrape_feed(db, feed)})
+			wg.Go(func() { scrape_feed(db, feed) })
 		}
 		wg.Wait()
 	}
 }
-
 
 func scrape_feed(db *database.Queries, feed database.Feed) {
 	_, err := db.MarkFeedAsFetched(context.Background(), feed.ID)
@@ -45,7 +47,28 @@ func scrape_feed(db *database.Queries, feed database.Feed) {
 	}
 
 	for _, item := range rssFeed.Channel.Item {
-		log.Printf("item found: %v", item.Title) 
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			log.Printf("couldn't parse date %v with err: %v", item.PubDate, err)
+			continue
+		}
+		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:        uuid.New(),
+			FeedID: feed.ID,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Name:      item.Title,
+			Description: sql.NullString{
+				String: item.Description,
+				Valid:  item.Description != "",
+			},
+			PublishedAt: pubDate,
+			Url:         item.Link,
+		})
+		if err != nil && !strings.Contains(err.Error(), "duplicate key"){
+			log.Printf("couldn't create new post: %v", err)
+			continue
+		}
 	}
-	
+	log.Printf("Feeds of %v scraped\n", feed.Name)
 }
