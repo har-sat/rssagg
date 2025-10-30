@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -34,6 +35,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't connect to database: %v\n", err)
 	}
+	fmt.Printf("database connection established with dburl: %v", dbURL)
+
 	apiCfg := apiConfig{
 		DB: database.New(conn),
 	}
@@ -56,7 +59,7 @@ func main() {
 
 	v1Router.Post("/user", apiCfg.handlerCreateUser)
 	v1Router.Get("/user", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
-	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
+	v1Router.Post("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
 	v1Router.Post("/feed", apiCfg.middlewareAuth(apiCfg.hanlderCreateFeed))
 	v1Router.Get("/feed", apiCfg.hanlderGetFeeds)

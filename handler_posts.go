@@ -26,5 +26,5 @@ func (apiCfg *apiConfig) handlerGetUserPosts(w http.ResponseWriter, r *http.Requ
 		utils.RespondWithError(w, 400, fmt.Sprintf("error fetching posts: %v", err))
 	}
 
-	utils.RespondWithJson(w, 200, data)
+	utils.RespondWithJson(w, 200, DatabasePostsToPosts(data))
 }

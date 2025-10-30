@@ -32,7 +32,16 @@ type FeedFollow struct {
 	FeedID    uuid.UUID `json:"feed_id"`
 }
 
-// this is just to not have CamelCase in response and have custom json tags defined
+type Post struct {
+	ID          uuid.UUID `json:"id"`
+	FeedID      uuid.UUID `json:"feed_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	PublishedAt time.Time `json:"published_at"`
+	Url         string    `json:"url"`
+}
+
 func DatabaseUserToUser(usr database.User) User {
 	return User{
 		ID:        usr.ID,
@@ -55,9 +64,29 @@ func DatabaseFeedToFeed(feed database.Feed) Feed {
 }
 
 func DatabaseFeedsToFeeds(dbFeeds []database.Feed) []Feed {
-	feeds := make([]Feed, len(dbFeeds))
+	feeds := make([]Feed, 0, len(dbFeeds))
 	for _, feed := range dbFeeds {
 		feeds = append(feeds, DatabaseFeedToFeed(feed))
 	}
 	return feeds
+}
+
+func DatabasePostToPost(post database.Post) Post {
+	return Post{
+		ID:          post.ID,
+		Title:       post.Name,
+		Description: post.Description.String,
+		PublishedAt: post.PublishedAt,
+		FeedID:      post.FeedID,
+		Url:         post.Url,
+		CreatedAt:   post.CreatedAt,
+	}
+}
+
+func DatabasePostsToPosts(posts []database.Post) []Post {
+	res := make([]Post, 0, len(posts))
+	for _, post := range posts {
+		res = append(res, DatabasePostToPost(post))
+	}
+	return res
 }
