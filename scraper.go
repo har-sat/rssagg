@@ -47,14 +47,29 @@ func scrape_feed(db *database.Queries, feed database.Feed) {
 	}
 
 	for _, item := range rssFeed.Channel.Item {
-		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
-		if err != nil {
-			log.Printf("couldn't parse date %v with err: %v", item.PubDate, err)
+		layouts := []string{
+			time.RFC1123Z, 
+			time.RFC1123,  
+			"Mon, 02 Jan 2006 15:04:05 MST",
+			"Mon, 2 Jan 2006 15:04:05 MST",
+			"02 Jan 2006 15:04:05 MST",
+		}
+
+		var pubDate time.Time
+		var parseErr error
+		for _, layout := range layouts {
+			pubDate, parseErr = time.Parse(layout, item.PubDate)
+			if parseErr == nil {
+				break
+			}
+		}
+		if parseErr != nil {
+			log.Printf("couldn't parse date %v with err: %v", item.PubDate, parseErr)
 			continue
 		}
 		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
 			ID:        uuid.New(),
-			FeedID: feed.ID,
+			FeedID:    feed.ID,
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Name:      item.Title,
@@ -65,7 +80,7 @@ func scrape_feed(db *database.Queries, feed database.Feed) {
 			PublishedAt: pubDate,
 			Url:         item.Link,
 		})
-		if err != nil && !strings.Contains(err.Error(), "duplicate key"){
+		if err != nil && !strings.Contains(err.Error(), "duplicate key") {
 			log.Printf("couldn't create new post: %v", err)
 			continue
 		}
