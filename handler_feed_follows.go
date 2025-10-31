@@ -33,14 +33,18 @@ func (apiCfg *apiConfig) handlerCreateUserFeed(w http.ResponseWriter, r *http.Re
 		utils.RespondWithError(w, 400, fmt.Sprintf("Error Creating follow: %v", err))
 		return
 	}
-	
+
 	utils.RespondWithJson(w, 201, feed_follow)
 }
 
 func (apiCfg *apiConfig) handlerGetUserFeeds(w http.ResponseWriter, r *http.Request, u database.User) {
 	feeds, err := apiCfg.DB.GetUserFeedFollows(r.Context(), u.ID)
 	if err != nil {
-		utils.RespondWithError(w, 400, fmt.Sprintf("Error getting user feed follows: %v", err))	
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error getting user feed follows: %v", err))
+		return
+	}
+	if feeds == nil {
+		feeds = []database.FeedFollow{}
 	}
 	utils.RespondWithJson(w, 200, feeds)
 }
@@ -60,7 +64,7 @@ func (apiCfg *apiConfig) handlerDeleteUserFeed(w http.ResponseWriter, r *http.Re
 		FeedID: params.FeedId,
 	})
 	if err != nil {
-		utils.RespondWithError(w, 400, fmt.Sprintf("Error deleting user feed follow: %v", err))	
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error deleting user feed follow: %v", err))
 	}
 	utils.RespondWithJson(w, 200, fmt.Sprintf("Deleted feed with feed id: %v", params.FeedId))
 }
